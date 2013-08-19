@@ -42,7 +42,7 @@ except ImportError:
 
 fallocate = None
 
-if CAN_FALLOCATE: 
+if CAN_FALLOCATE:
   libc_name = ctypes.util.find_library('c')
   libc = ctypes.CDLL(libc_name)
   c_off64_t = ctypes.c_int64
@@ -650,13 +650,12 @@ def __archive_update_many(fh,header,archive,points):
   step = archive['secondsPerPoint']
   alignedPoints = [ (timestamp - (timestamp % step), value)
                     for (timestamp,value) in points ]
+  alignedPoints = dict(alignedPoints).items() # Take the last val of duplicates
   #Create a packed string for each contiguous sequence of points
   packedStrings = []
   previousInterval = None
   currentString = ""
   for (interval,value) in alignedPoints:
-    if interval == previousInterval:
-      currentString[-pointSize] = struct.pack(pointFormat, interval, value)
     if (not previousInterval) or (interval == previousInterval + step):
       currentString += struct.pack(pointFormat,interval,value)
       previousInterval = interval
