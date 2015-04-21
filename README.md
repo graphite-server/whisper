@@ -2,22 +2,21 @@
 
 [![Build Status](https://secure.travis-ci.org/graphite-project/whisper.png)](http://travis-ci.org/graphite-project/whisper)
 
-Whisper is one of the components of [Graphite][], and is responsible for
-the backend storage of incoming metrics from the network.
-Currently [Whisper][] is our stable, supported backend and
-[Ceres][] is the work-in-progress future replacement for Whisper.
-
-[Graphite]: https://github.com/graphite-project
-[Graphite Web]: https://github.com/graphite-project/graphite-web
-[Whisper]: https://github.com/graphite-project/whisper
-[Ceres]: https://github.com/graphite-project/ceres
-
 ## Overview
 
-Whisper is a fixed-size database, similar in design and purpose to RRD
-(round-robin-database). It provides fast, reliable storage of numeric data over
-time. Whisper allows for higher resolution (seconds per point) of recent data
-to degrade into lower resolutions for long-term retention of historical data.
+Whisper is one of three components within the Graphite project:
+
+1. [Graphite-Web](https://github.com/graphite-project/graphite-web), a Django-based web application that renders graphs and dashboards
+2. The [Carbon](https://github.com/graphite-project/carbon) metric processing daemons
+3. The Whisper time-series database library
+
+![Graphite Components](https://github.com/graphite-project/graphite-web/raw/master/webapp/content/img/overview.png "Graphite Components")
+
+Whisper is a fixed-size database, similar in design and purpose to RRD (round-robin-database). It provides fast, reliable storage of numeric data over time. Whisper allows for higher resolution (seconds per point) of recent data to degrade into lower resolutions for long-term retention of historical data.
+
+## Installation, Configuration and Usage
+
+Please refer to the instructions at [readthedocs](http://graphite.readthedocs.org/).
 
 ## Whisper Scripts
 
@@ -60,7 +59,7 @@ Options:
   --aggregationMethod=AGGREGATIONMETHOD
                         Function to use when aggregating values (average, sum,
                         last, max, min)
-  --overwrite           
+  --overwrite
 ```
 
 whisper-dump.py
@@ -89,6 +88,9 @@ Options:
                  (default: now)
   --json         Output results in JSON form
   --pretty       Show human-readable timestamps instead of unix times
+  --drop=DROP    Specify 'nulls' to drop all null values. Specify 'zeroes' to
+                 drop all zero values. Specify 'empty' to drop both null and
+                 zero values.
 ```
 
 whisper-info.py
@@ -107,6 +109,23 @@ Join two existing whisper files together.
 
 ```
 Usage: whisper-merge.py [options] from_path to_path
+
+Options:
+  -h, --help  show this help message and exit
+```
+
+whisper-fill.py
+----------------
+Copies data from src in dst, if missing.
+Unlike whisper-merge, don't overwrite data that's
+already present in the target file, but instead, only add the missing
+data (e.g. where the gaps in the target file are).  Because no values
+are overwritten, no data or precision gets lost.  Also, unlike
+whisper-merge, try to take the highest-precision archive to provide
+the data, instead of the one with the largest retention.
+
+```
+Usage: whisper-fill.py [options] src_path dst_path
 
 Options:
   -h, --help  show this help message and exit
@@ -179,3 +198,7 @@ Options:
   --columns       print output in simple columns
   --no-headers    do not print column headers
 ```
+
+## License
+
+Whisper is licensed under version 2.0 of the Apache License. See the [LICENSE](https://github.com/graphite-project/carbon/blob/master/LICENSE) file for details.
