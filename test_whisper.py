@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import time
 import math
 import random
 import struct
 
 import errno
-from mock import patch, mock_open
+
+try:
+    from unittest.mock import patch, mock_open
+except ImportError:
+    from mock import patch, mock_open
 
 try:
     import unittest2 as unittest
@@ -183,6 +186,13 @@ class TestWhisper(WhisperTestBase):
         self.assertEqual(whisper.aggregate('sum', [10, 2, 3, 4]), 19)
         # average of the list elements
         self.assertEqual(whisper.aggregate('average', [1, 2, 3, 4]), 2.5)
+        avg_zero = [1, 2, 3, 4, None, None, None, None]
+        non_null = [i for i in avg_zero if i is not None]
+        self.assertEqual(whisper.aggregate('avg_zero', non_null, avg_zero), 1.25)
+        # avg_zero without neighborValues
+        
+        with self.assertRaises(whisper.InvalidAggregationMethod):
+            whisper.aggregate('avg_zero', non_null)
 
         with AssertRaisesException(whisper.InvalidAggregationMethod('Unrecognized aggregation method derp')):
             whisper.aggregate('derp', [12, 2, 3123, 1])
@@ -291,7 +301,7 @@ class TestWhisper(WhisperTestBase):
         """
         whisper.create(self.filename, [(1, 60)])
 
-        with open(self.filename) as fh:
+        with open(self.filename, 'rb') as fh:
             msg = "Invalid time interval: from time '{0}' is after until time '{1}'"
             until_time = 0
             from_time = int(time.time()) + 100
